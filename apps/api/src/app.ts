@@ -16,6 +16,7 @@ import {
   paymentWebhookRouter,
 } from './modules/payment/payment.router.js';
 import { logger } from './shared/observability/logger.js';
+import { docsRouter } from './shared/openapi.js';
 import { requestId } from './shared/observability/requestId.js';
 
 const handleError: ErrorRequestHandler = (error: unknown, req, res, next) => {
@@ -84,6 +85,7 @@ export function createApp() {
   });
 
   app.use('/api/auth/login', rateLimit('login'));
+  app.use('/api', docsRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/audit', auditRouter);
   app.use('/api/prescriptions', prescriptionRouter);

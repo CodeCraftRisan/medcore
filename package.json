@@ -9,13 +9,16 @@
     "node": "^20.19.0 || 24.x"
   },
   "scripts": {
-    "typecheck": "npm run typecheck --workspaces",
+    "typecheck": "npm run typecheck --workspaces && tsc -p loadtest/tsconfig.json",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "dev": "npm run dev --workspace @medcore/api",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "benchmark": "tsx loadtest/benchmark-research.ts",
+    "test:chaos": "npm run test --workspace @medcore/api -- chaos.and.scale.test.ts --disableConsoleIntercept",
+    "quickstart": "node scripts/quickstart.mjs"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
