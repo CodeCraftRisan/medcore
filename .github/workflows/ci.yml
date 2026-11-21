@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      - name: Start MongoDB and Redis
+        run: docker compose up -d --wait --wait-timeout 120
+
+      - name: Run integration tests
+        env:
+          MONGO_URI: 'mongodb://127.0.0.1:27017/medcore?replicaSet=rs0&directConnection=true'
+          REDIS_URL: 'redis://127.0.0.1:6379'
+        run: |
+          export JWT_ACCESS_SECRET="$(openssl rand -hex 32)"
+          npm test
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --no-color
