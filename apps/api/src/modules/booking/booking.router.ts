@@ -10,6 +10,7 @@ import {
   completeIdempotency,
   requireIdempotency,
 } from '../../shared/middleware/idempotency.js';
+import { incrementMetric } from '../../shared/observability/metrics.js';
 import { Slot } from '../doctor/slot.model.js';
 import { Appointment } from './appointment.model.js';
 import {
@@ -72,6 +73,7 @@ bookingRouter.post('/hold', requireIdempotency, async (req, res) => {
       return;
     }
     claim.committed = true;
+    incrementMetric('medcore_booking_success_total');
     res.status(201).json(body);
   } catch (error) {
     if (

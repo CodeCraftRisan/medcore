@@ -4,6 +4,10 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { isMongoReady } from './config/db.js';
 import { isRedisReady } from './config/redis.js';
+import { auditRouter } from './modules/audit/audit.router.js';
+import { prescriptionRouter } from './modules/prescription/prescription.router.js';
+import { rateLimit } from './shared/middleware/rateLimit.js';
+import { metricsText, observeHttp } from './shared/observability/metrics.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { doctorRouter } from './modules/doctor/doctor.router.js';
 import { bookingRouter } from './modules/booking/booking.router.js';
@@ -43,6 +47,7 @@ export function createApp() {
   const app = express();
 
   app.use(requestId);
+  app.use(observeHttp);
   app.use(
     pinoHttp({
       logger,
@@ -56,7 +61,13 @@ export function createApp() {
   app.use(helmet());
   app.use(cors());
   app.use('/api/payments/webhook', paymentWebhookRouter);
+  app.use('/api', rateLimit('api'));
   app.use(express.json());
+
+  app.get('/metrics', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+    res.send(metricsText());
+  });
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
@@ -72,7 +83,10 @@ export function createApp() {
       .json({ status: ready ? 'ready' : 'not_ready' });
   });
 
+  app.use('/api/auth/login', rateLimit('login'));
   app.use('/api/auth', authRouter);
+  app.use('/api/audit', auditRouter);
+  app.use('/api/prescriptions', prescriptionRouter);
   app.use('/api/doctors', doctorRouter);
   app.use('/api/bookings', bookingRouter);
   app.use('/api/payments', paymentRouter);

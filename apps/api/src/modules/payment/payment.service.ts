@@ -3,6 +3,7 @@ import { env } from '../../config/env.js';
 import { completeIdempotency } from '../../shared/middleware/idempotency.js';
 import { logger } from '../../shared/observability/logger.js';
 import { Outbox } from '../../shared/outbox/outbox.model.js';
+import { appendAuditLog } from '../audit/audit.service.js';
 import { Appointment } from '../booking/appointment.model.js';
 import { Doctor } from '../doctor/doctor.model.js';
 import { Slot } from '../doctor/slot.model.js';
@@ -156,6 +157,14 @@ export async function applyPaymentSuccess(
           slotId: slot._id,
         },
       }).save({ session });
+      await appendAuditLog(
+        'AppointmentConfirmed',
+        {
+          appointmentId: appointment._id.toHexString(),
+          slotId: slot._id.toHexString(),
+        },
+        session,
+      );
       return false;
     }
   }

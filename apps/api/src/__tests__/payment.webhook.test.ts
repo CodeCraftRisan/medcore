@@ -5,6 +5,7 @@ import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { createApp } from '../app.js';
 import { closeMongo, connectMongo } from '../config/db.js';
 import { env } from '../config/env.js';
+import { AuditLog } from '../modules/audit/audit.model.js';
 import { signAccessToken } from '../modules/auth/accessToken.js';
 import { Appointment } from '../modules/booking/appointment.model.js';
 import { expireHolds } from '../modules/booking/expireHolds.js';
@@ -134,6 +135,9 @@ it('confirms the appointment and relays its outbox event once', async () => {
   expect(await Payment.findOne({ stripeIntentId: intentId })).toMatchObject({
     status: 'succeeded',
   });
+  expect(await AuditLog.countDocuments({ type: 'AppointmentConfirmed' })).toBe(
+    1,
+  );
   const event = await Outbox.findOne({
     type: 'AppointmentConfirmed',
     'payload.appointmentId': new mongoose.Types.ObjectId(appointmentId),

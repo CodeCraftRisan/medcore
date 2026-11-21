@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { redis } from '../../config/redis.js';
+import { incrementMetric } from '../observability/metrics.js';
 import { logger } from '../observability/logger.js';
 
 const releaseIfOwned = `
@@ -24,7 +25,9 @@ export async function acquireSlotLock(
       ttlMs,
       'NX',
     );
-    return result === 'OK' ? token : null;
+    if (result === 'OK') return token;
+    incrementMetric('medcore_lock_contention_total');
+    return null;
   } catch {
     logger.warn('Redis slot lock unavailable; using MongoDB');
     return undefined;

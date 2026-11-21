@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { z } from 'zod';
 import { requireAuth } from '../../shared/middleware/auth.js';
 import { requireIdempotency } from '../../shared/middleware/idempotency.js';
+import { incrementMetric } from '../../shared/observability/metrics.js';
 import { logger } from '../../shared/observability/logger.js';
 import {
   applyPaymentSuccess,
@@ -106,6 +107,7 @@ paymentWebhookRouter.post(
         try {
           await finishLateRefund(success.data.id);
         } catch {
+          incrementMetric('medcore_webhook_failures_total');
           logger.warn('Late payment refund deferred to reconciliation');
         }
       }

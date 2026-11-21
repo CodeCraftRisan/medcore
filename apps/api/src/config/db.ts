@@ -1,3 +1,7 @@
+import '../shared/observability/slowQuery.js';
+import { AuditHead, AuditLog } from '../modules/audit/audit.model.js';
+import { initializeAudit } from '../modules/audit/audit.service.js';
+import { Prescription } from '../modules/prescription/prescription.model.js';
 import mongoose from 'mongoose';
 import { RefreshToken } from '../modules/auth/refreshToken.model.js';
 import { User } from '../modules/auth/user.model.js';
@@ -22,11 +26,15 @@ export async function connectMongo(dbName?: string): Promise<void> {
     Slot.init(),
     Appointment.init(),
     IdempotencyKey.init(),
+    AuditHead.init(),
+    AuditLog.init(),
+    Prescription.init(),
     Payment.init(),
     StripeEvent.init(),
     Outbox.init(),
     OutboxDelivery.init(),
   ]);
+  await initializeAudit();
 }
 
 export async function isMongoReady(): Promise<boolean> {

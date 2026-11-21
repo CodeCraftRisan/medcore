@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 import { mongo, type ClientSession, type Types } from 'mongoose';
 import { z } from 'zod';
 import type {} from './auth.js';
+import { canonicalJson } from '../crypto/hashChain.js';
 import { IdempotencyKey } from './idempotencyKey.model.js';
 
 interface IdempotencyClaim {
@@ -18,24 +19,6 @@ declare module 'express-serve-static-core' {
 }
 
 const keySchema = z.string().regex(/^[\x21-\x7e]{1,255}$/);
-
-function canonicalJson(value: unknown): string {
-  if (Array.isArray(value))
-    return '[' + value.map(canonicalJson).join(',') + ']';
-  if (value !== null && typeof value === 'object') {
-    const fields = Object.entries(value).sort(([left], [right]) =>
-      left < right ? -1 : left > right ? 1 : 0,
-    );
-    return (
-      '{' +
-      fields
-        .map(([key, field]) => JSON.stringify(key) + ':' + canonicalJson(field))
-        .join(',') +
-      '}'
-    );
-  }
-  return JSON.stringify(value) ?? 'null';
-}
 
 export async function completeIdempotency(
   claim: IdempotencyClaim,
