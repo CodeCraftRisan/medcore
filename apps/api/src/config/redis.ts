@@ -2,7 +2,7 @@ import { Redis } from 'ioredis';
 import { logger } from '../shared/observability/logger.js';
 import { env } from './env.js';
 
-const redis = new Redis(env.REDIS_URL, {
+export const redis = new Redis(env.REDIS_URL, {
   lazyConnect: true,
   enableOfflineQueue: false,
   connectTimeout: 5000,

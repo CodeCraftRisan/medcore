@@ -13,7 +13,11 @@ async function start(): Promise<void> {
   await connectMongo();
   if (stopping) return;
 
-  await connectRedis();
+  try {
+    await connectRedis();
+  } catch {
+    logger.warn('Starting API without Redis; booking will use MongoDB');
+  }
   if (stopping) return;
 
   const listening = once(server, 'listening');

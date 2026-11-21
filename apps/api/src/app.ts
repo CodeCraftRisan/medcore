@@ -6,6 +6,7 @@ import { isMongoReady } from './config/db.js';
 import { isRedisReady } from './config/redis.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { doctorRouter } from './modules/doctor/doctor.router.js';
+import { bookingRouter } from './modules/booking/booking.router.js';
 import { logger } from './shared/observability/logger.js';
 import { requestId } from './shared/observability/requestId.js';
 
@@ -68,6 +69,7 @@ export function createApp() {
 
   app.use('/api/auth', authRouter);
   app.use('/api/doctors', doctorRouter);
+  app.use('/api/bookings', bookingRouter);
   app.use(handleError);
 
   return app;
