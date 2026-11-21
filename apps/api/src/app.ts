@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { isMongoReady } from './config/db.js';
 import { isRedisReady } from './config/redis.js';
+import { authRouter } from './modules/auth/auth.router.js';
 import { logger } from './shared/observability/logger.js';
 import { requestId } from './shared/observability/requestId.js';
 
@@ -64,6 +65,7 @@ export function createApp() {
       .json({ status: ready ? 'ready' : 'not_ready' });
   });
 
+  app.use('/api/auth', authRouter);
   app.use(handleError);
 
   return app;
