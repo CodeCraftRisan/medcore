@@ -11,6 +11,7 @@ const schema = new Schema(
     slotId: { type: Schema.Types.ObjectId, ref: 'Slot', required: true },
     status: { type: String, enum: appointmentStatuses, required: true },
     paymentIntentId: { type: String, default: null },
+    paymentAmount: { type: Number, default: null, select: false },
     idempotencyKey: { type: String, required: true },
     holdExpiresAt: { type: Date, required: true },
   },
@@ -26,5 +27,7 @@ schema.index(
     },
   },
 );
+
+schema.index({ status: 1, holdExpiresAt: 1 });
 
 export const Appointment = model('Appointment', schema);

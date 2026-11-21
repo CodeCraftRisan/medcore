@@ -5,10 +5,16 @@ import { Doctor } from '../modules/doctor/doctor.model.js';
 import { Slot } from '../modules/doctor/slot.model.js';
 import { Appointment } from '../modules/booking/appointment.model.js';
 import { IdempotencyKey } from '../shared/middleware/idempotencyKey.model.js';
+import { Payment } from '../modules/payment/payment.model.js';
+import { StripeEvent } from '../modules/payment/stripeEvent.model.js';
+import { Outbox, OutboxDelivery } from '../shared/outbox/outbox.model.js';
 import { env } from './env.js';
 
-export async function connectMongo(): Promise<void> {
-  await mongoose.connect(env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+export async function connectMongo(dbName?: string): Promise<void> {
+  await mongoose.connect(env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+    dbName,
+  });
   await Promise.all([
     User.init(),
     RefreshToken.init(),
@@ -16,6 +22,10 @@ export async function connectMongo(): Promise<void> {
     Slot.init(),
     Appointment.init(),
     IdempotencyKey.init(),
+    Payment.init(),
+    StripeEvent.init(),
+    Outbox.init(),
+    OutboxDelivery.init(),
   ]);
 }
 

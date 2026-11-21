@@ -7,6 +7,10 @@ import { isRedisReady } from './config/redis.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { doctorRouter } from './modules/doctor/doctor.router.js';
 import { bookingRouter } from './modules/booking/booking.router.js';
+import {
+  paymentRouter,
+  paymentWebhookRouter,
+} from './modules/payment/payment.router.js';
 import { logger } from './shared/observability/logger.js';
 import { requestId } from './shared/observability/requestId.js';
 
@@ -51,6 +55,7 @@ export function createApp() {
   );
   app.use(helmet());
   app.use(cors());
+  app.use('/api/payments/webhook', paymentWebhookRouter);
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
@@ -70,6 +75,7 @@ export function createApp() {
   app.use('/api/auth', authRouter);
   app.use('/api/doctors', doctorRouter);
   app.use('/api/bookings', bookingRouter);
+  app.use('/api/payments', paymentRouter);
   app.use(handleError);
 
   return app;

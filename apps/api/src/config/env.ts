@@ -20,12 +20,46 @@ const result = z
       .enum(['development', 'test', 'production'])
       .default('development'),
     JWT_ACCESS_SECRET: z.string().min(32),
+    STRIPE_SECRET_KEY: z
+      .string()
+      .trim()
+      .transform((value) => value || undefined)
+      .optional(),
+    STRIPE_WEBHOOK_SECRET: z
+      .string()
+      .trim()
+      .transform((value) => value || undefined)
+      .optional(),
+    STRIPE_CURRENCY: z
+      .string()
+      .regex(/^[a-z]{3}$/)
+      .default('usd'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     MONGO_URI: z.string().regex(/^mongodb(?:\+srv)?:\/\/[^\s]+$/),
     REDIS_URL: z.url({ protocol: /^rediss?$/ }),
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
+  })
+  .superRefine((value, ctx) => {
+    if (value.NODE_ENV === 'production' && !value.STRIPE_SECRET_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['STRIPE_SECRET_KEY'],
+        message: 'Required in production',
+      });
+    }
+    if (
+      value.NODE_ENV !== 'test' &&
+      value.STRIPE_SECRET_KEY &&
+      !value.STRIPE_WEBHOOK_SECRET
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['STRIPE_WEBHOOK_SECRET'],
+        message: 'Required with Stripe',
+      });
+    }
   })
   .safeParse(process.env);
 

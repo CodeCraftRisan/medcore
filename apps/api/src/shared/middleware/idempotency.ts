@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { RequestHandler } from 'express';
 import { mongo, type ClientSession, type Types } from 'mongoose';
 import { z } from 'zod';
+import type {} from './auth.js';
 import { IdempotencyKey } from './idempotencyKey.model.js';
 
 interface IdempotencyClaim {
